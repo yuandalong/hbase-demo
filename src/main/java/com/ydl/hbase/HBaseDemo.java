@@ -1,11 +1,8 @@
 package com.ydl.hbase;
 
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
-
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hbase.Cell;
+import org.apache.hadoop.hbase.CellUtil;
 import org.apache.hadoop.hbase.HBaseConfiguration;
 import org.apache.hadoop.hbase.HColumnDescriptor;
 import org.apache.hadoop.hbase.HTableDescriptor;
@@ -21,24 +18,34 @@ import org.apache.hadoop.hbase.client.ResultScanner;
 import org.apache.hadoop.hbase.client.Scan;
 import org.apache.hadoop.hbase.client.Table;
 import org.apache.hadoop.hbase.exceptions.DeserializationException;
+import org.apache.hadoop.hbase.filter.CompareFilter.CompareOp;
 import org.apache.hadoop.hbase.filter.Filter;
 import org.apache.hadoop.hbase.filter.SingleColumnValueFilter;
-import org.apache.hadoop.hbase.filter.CompareFilter.CompareOp;
 import org.apache.hadoop.hbase.util.Bytes;
 import org.junit.Before;
 import org.junit.Test;
 
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
+
 /**
  * hbase demo
+ *
  * @author ydl
  */
 public class HBaseDemo {
 
-    // 与HBase数据库的连接对象
-    Connection connection;
+    /**
+     * 与HBase数据库的连接对象
+     */
 
-    // 数据库元数据操作对象
-    Admin admin;
+    private Connection connection;
+
+    /**
+     * 数据库元数据操作对象
+     */
+    private Admin admin;
 
     @Before
     public void setUp() throws Exception {
@@ -49,7 +56,7 @@ public class HBaseDemo {
         // 设置连接参数：HBase数据库所在的主机IP
         conf.set("hbase.zookeeper.quorum", "app-dev1-xyplus-a1");
         // 设置连接参数：HBase数据库使用的端口
-//        conf.set("hbase.zookeeper.property.clientPort", "2181");
+        // conf.set("hbase.zookeeper.property.clientPort", "2181");
 
         // 取得一个数据库连接对象
         connection = ConnectionFactory.createConnection(conf);
@@ -85,7 +92,6 @@ public class HBaseDemo {
 
             // 列族描述对象
             HColumnDescriptor family = new HColumnDescriptor("base");
-            ;
 
             // 在数据表中新建一个列族
             hTableDescriptor.addFamily(family);
@@ -112,20 +118,10 @@ public class HBaseDemo {
         ResultScanner scanner = table.getScanner(new Scan());
 
         // 循环输出表中的数据
-        for (Result result : scanner) {
-
-            byte[] row = result.getRow();
-            System.out.println("row key is:" + new String(row));
-
-            List<Cell> listCells = result.listCells();
-            for (Cell cell : listCells) {
-
-                byte[] familyArray = cell.getFamilyArray();
-                byte[] qualifierArray = cell.getQualifierArray();
-                byte[] valueArray = cell.getValueArray();
-
-                System.out.println("row value is:" + new String(familyArray) + new String(qualifierArray) + new
-                        String(valueArray));
+        for (Result r : scanner) {
+            System.out.println("获得到rowkey:" + Bytes.toString(r.getRow()));
+            for (Cell cell : r.rawCells()) {
+                printRowInfo(cell);
             }
         }
 
@@ -155,13 +151,7 @@ public class HBaseDemo {
 
         List<Cell> listCells = result.listCells();
         for (Cell cell : listCells) {
-
-            byte[] familyArray = cell.getFamilyArray();
-            byte[] qualifierArray = cell.getQualifierArray();
-            byte[] valueArray = cell.getValueArray();
-
-            System.out.println("row value is:" + new String(familyArray) + new String(qualifierArray) + new String
-                    (valueArray));
+            printRowInfo(cell);
         }
 
         System.out.println("---------------按行键查询表数据 END-----------------");
@@ -199,18 +189,17 @@ public class HBaseDemo {
 
             List<Cell> listCells = result.listCells();
             for (Cell cell : listCells) {
-
-                byte[] familyArray = cell.getFamilyArray();
-                byte[] qualifierArray = cell.getQualifierArray();
-                byte[] valueArray = cell.getValueArray();
-
-                System.out.println("row value is:" + new String(familyArray) + new String(qualifierArray) + new
-                        String(valueArray));
+                printRowInfo(cell);
             }
         }
 
         System.out.println("---------------按条件查询表数据 END-----------------");
 
+    }
+
+    private void printRowInfo(Cell cell) {
+        System.out.println("family:" + Bytes.toString(CellUtil.cloneFamily(cell)) + " | qaualifier:" + Bytes.toString
+                (CellUtil.cloneQualifier(cell)) + " | value:" + Bytes.toString(CellUtil.cloneValue(cell)));
     }
 
     /**
@@ -334,7 +323,7 @@ public class HBaseDemo {
         Table table = connection.getTable(TableName.valueOf("t_book"));
 
         // 需要插入数据库的数据集合
-        List<Put> putList = new ArrayList<Put>();
+        List<Put> putList = new ArrayList<>();
 
         Put put;
 

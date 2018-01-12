@@ -17,17 +17,16 @@ import org.apache.hadoop.hbase.util.Bytes;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
 /**
  * HbaseDemo
  *
- *
  * @author ydl
  * @date 2018/1/11
  */
-@Deprecated
 public class HbaseDemoOld {
     static final String rowKey = "row1";
     static HBaseAdmin hBaseAdmin;
@@ -92,7 +91,7 @@ public class HbaseDemoOld {
 
     public static void delete(String tableName, String rowKey) throws Exception {
         HTable hTable = getHTable(tableName);
-        List<Delete> list = new ArrayList<Delete>();
+        List<Delete> list = new ArrayList<>();
         Delete d1 = new Delete(Bytes.toBytes(rowKey));
         list.add(d1);
         hTable.delete(list);
@@ -148,15 +147,15 @@ public class HbaseDemoOld {
     public static void main(String[] args) throws Exception {
         String tableName = "tableTest";
         String[] columns = new String[]{"column_A", "column_B"};
-        createTable(tableName, columns);
-//        Map<String, String> map = new HashMap<String, String>();
-//        map.put("column_A", "AAA");
-//        map.put("column_B:1", "b1");
-//        map.put("column_B:2", "b2");
-//        insert(tableName, map);
-//        selectOne(tableName, rowKey);
-//        selectAll(tableName);
-//        delete(tableName, rowKey);
-//        dropTable(tableName);
+        //        createTable(tableName, columns);
+        Map<String, String> map = new HashMap<>(3);
+        map.put("column_A", "AAA");
+        map.put("column_B:1", "b1");
+        map.put("column_B:2", "b2");
+        //        insert(tableName, map);
+        //        selectOne(tableName, rowKey);
+        selectAll(tableName);
+        //        delete(tableName, rowKey);
+        //        dropTable(tableName);
     }
 }
