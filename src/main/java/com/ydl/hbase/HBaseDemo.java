@@ -26,6 +26,7 @@ import org.junit.Before;
 import org.junit.Test;
 
 import java.io.IOException;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -46,6 +47,10 @@ public class HBaseDemo {
      * 数据库元数据操作对象
      */
     private Admin admin;
+    /**
+     * 时间戳格式化
+     */
+    private SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss:SSS");
 
     @Before
     public void setUp() throws Exception {
@@ -54,7 +59,8 @@ public class HBaseDemo {
         Configuration conf = HBaseConfiguration.create();
 
         // 设置连接参数：HBase数据库所在的主机IP
-        conf.set("hbase.zookeeper.quorum", "app-dev1-xyplus-a1");
+        // conf.set("hbase.zookeeper.quorum", "app-dev1-xyplus-a1");
+        conf.set("hbase.zookeeper.quorum", "localhost");
         // 设置连接参数：HBase数据库使用的端口
         // conf.set("hbase.zookeeper.property.clientPort", "2181");
 
@@ -199,7 +205,8 @@ public class HBaseDemo {
 
     private void printRowInfo(Cell cell) {
         System.out.println("family:" + Bytes.toString(CellUtil.cloneFamily(cell)) + " | qaualifier:" + Bytes.toString
-                (CellUtil.cloneQualifier(cell)) + " | value:" + Bytes.toString(CellUtil.cloneValue(cell)));
+                (CellUtil.cloneQualifier(cell)) + " | value:" + Bytes.toString(CellUtil.cloneValue(cell)) + " | " +
+                "timestamp:" + formatter.format(cell.getTimestamp()));
     }
 
     /**
@@ -330,7 +337,7 @@ public class HBaseDemo {
         // 生成数据集合
         for (int i = 0; i < 10; i++) {
             put = new Put(Bytes.toBytes("row" + i));
-            put.addColumn(Bytes.toBytes("base"), Bytes.toBytes("name"), Bytes.toBytes("bookName" + i));
+            put.addColumn(Bytes.toBytes("base"), Bytes.toBytes("name2"), Bytes.toBytes("bookName" + i));
 
             putList.add(put);
         }
